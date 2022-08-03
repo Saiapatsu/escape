@@ -71,8 +71,13 @@ function escape.cmd(str)
 	-- !: env substitution in delayed expansion mode
 	-- %: env substitution
 	-- ": generally a nuisance
-	-- tabs and newlines cannot be passed through the shell and cause trouble
-	-- when pasted into cmd.exe
+	-- newlines cannot be passed through shell execute
+	-- tabs CAN be passed through shell execute as-is,
+	-- but cause trouble when pasted into cmd.exe
+	-- in addition, per https://superuser.com/q/150116
+	-- you can put line feeds into cmd.exe with alt+10
+	-- and they work fine with echo, but show up as ?
+	-- (3f, question mark) in DumpArgs...
 	str = str:gsub("[\t\r\n]+", " ")
 	-- Lua patterns do not have lookahead or lookbehind, so the first segment
 	-- needs special care
