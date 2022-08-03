@@ -162,6 +162,32 @@ function unparse(str) {
 
 ]]
 
+--[[
+
+potential C port?
+
+int
+escapecmd(
+	char*  instr,  // input: string to escape
+	char*  outstr, // input: output buffer
+	int    buflen, // input: maximum amount of chars to write to outstr
+	char** endstr, // output: the \0 at the end of outstr
+	escapecmdstate* state) // optional input/output: state to continue after output buffer turns out to be too small
+{
+	// ...
+}
+
+on success (fit into buffer), return 0
+on failure (did not fit into buffer), return !0
+on failure, if state is null, you are expected to discard the result or try again with a larger buffer
+on failure, if state is not null, you are expected to get another buffer (or expand) and continue by passing in the same state and continuing where you left off (at new buffer or endstr)
+regardless of outcome, endstr will be set and will point to \0
+unless buflen is 0 or something
+
+do any c string functions return the amount of chars written?
+
+]]
+
 -- Escape filenames on NTFS in a manner that somewhat resembles the original.
 -- Not bijective.
 -- Does not prevent the filename from being too long to be a path name.
