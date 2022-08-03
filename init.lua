@@ -117,6 +117,51 @@ function escape.unparse(str)
 	return escape.cmd(escape.argv(str))
 end
 
+--[[
+
+function escapeArgv(str) {
+	return / \t\r\n/.test(str)
+		? '"' + str.replace(/(\\*)"/g, '$1$1\\"').replace(/\\*$/, '$&$&"')
+		: str.replace(/(\\*)"/g, '$1$1\\"');
+}
+
+function escapeArgvDumb(str) {
+	return '"' + str.replace(/(\\*)"/g, '$1$1\\"').replace(/\\*$/, '$&$&"');
+}
+
+function escapeCmd(str) {
+	function cmdescape(str) {
+		return str.replace(/[()<>&|^!%"]/g, "^$&");
+	}
+	str = str.replace(/[\t\r\n]+/g, " ");
+	let quoted = false;
+	let last = 0;
+	return str.replace(/(\^*"|^)([^"]*)/g, (match, quote, unquote) => {
+		last += match.length; // silly workaround for the lack of lua's () in regex
+		if (quote.length & 1) {
+			quoted = !quoted;
+		}
+		if (!quoted) {
+			return quote + cmdescape(unquote);
+		} else if (/[!%]/.test(unquote) || last == str.length) {
+			quoted = !quoted;
+			return "^" + quote + cmdescape(unquote);
+		} else {
+			return quote + unquote;
+		}
+	});
+}
+
+function escapeCmdDumb(str) {
+	return str.replace(/[\t\r\n]+/g, " ").replace(/[()<>&|^!%"]/g, "^$&");
+}
+
+function unparse(str) {
+	return escapeCmd(escapeArgv(str));
+}
+
+]]
+
 -- Escape filenames on NTFS in a manner that somewhat resembles the original.
 -- Not bijective.
 -- Does not prevent the filename from being too long to be a path name.
