@@ -194,7 +194,7 @@ do any c string functions return the amount of chars written?
 -- Not bijective.
 -- Does not prevent the filename from being too long to be a path name.
 do
-	local escmatch = [=[[%z\1-\31<>:"/\|?*]]=]
+	local escmatch = '[%z\1-\31<>:"/\\|?*]'
 	local escmap = {
 		["<"] = "{",
 		[">"] = "}",
@@ -204,7 +204,7 @@ do
 		["\\"]= "⧹", -- big reverse solidus. reverse solidus: ⧵
 		["|"] = "ǀ", -- IPA dental click
 		["?"] = "~",
-		["*"] = "_",
+		["*"] = "_", -- * and _ both are emphasis in Markdown
 	}
 	for i =  0, 15 do escmap[string.char(i)] = "#" .. string.byte(i + 64) end
 	for i = 16, 31 do escmap[string.char(i)] = "#" .. string.byte(i + 96) end
@@ -214,16 +214,19 @@ do
 	function escape.filename(str)
 		-- Cannot be a reserved name (a legacy device).
 		-- The name is anything before the first dot.
-		-- To prove this, rename something to NUL.foo.bar
-		str = string.gsub(str, "^[^.]*", function(name)
+		-- Proof: rename a file to NUL.foo.bar
+		-- Mitigated by suffixing the name with a #
+		str = str:gsub("^[^.]*", function(name)
 			if devices[string.upper(name)] then
 				return name .. "#"
 			end
 		end)
 		-- Cannot contain <>:"/\|?* or any character from 0 to 31.
 		-- Can contain DEL, however (which is matched by %c)
+		-- Mitigated by replacing each of these characters with a lookalike.
 		str = str:gsub(escmatch, escmap)
 		-- Cannot end with a space or period.
+		-- Mitigated by suffixing the name with a #
 		if str:find("[ .]$") then
 			str = str .. "#"
 		end
