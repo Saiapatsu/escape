@@ -22,99 +22,146 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ]]
 
-local escape = {}
-
 --[[
+If your string will pass through the shell, e.g. system(), popen(),
+any sort of shell execute, essentially anything that you can do
+environment substitution like %userprofile% in, then use unparse().
+
+If your string will pass through CreateProcess and similar to a
+command that splits its arguments using CommandLineToArgv or
+parse_cmdline, implicitly or explicitly, then use argv().
+
+If your string will pass through the shell to a command that does
+not split its arguments, such as set, echo etc., then use cmd().
+For example, I've written a shim program that just changes directory
+and shell executes its command line verbatim. Said program's args
+need to be argv-escaped only once for the real target, but twice for
+both of the shell executions.
+
+If your string will pass through CreateProcess to a command that
+doesn't split its arguments, then your string does not need to be
+escaped.
+I can't name any such program off the top of my head.
+
+"cmd", "cmd.exe" and "shell" are used interchangeably in these docs.
+
+These functions attempt to minimize the amount of characters used
+to escape.
+For example, argv() will not surround the string in quotes if it
+has no spaces. It will still escape quotes.
+The Dumb variants will not check the contents of string and just
+escape everything, even if redundant.
+argvDumb() will always surround in quotes and cmdDumb() will stick
+carets on every special character, even though quotes suppress
+cmd.exe's behavior to some extent.
+
+The MIT License does not require you to provide public/user-facing
+attribution.
+
 Informed by these articles as of 2021-09-15:
 
 https://docs.microsoft.com/en-us/archive/blogs/twistylittlepassagesallalike/everyone-quotes-command-line-arguments-the-wrong-way
 http://www.windowsinspired.com/understanding-the-command-line-string-and-arguments-received-by-a-windows-program/
 http://www.windowsinspired.com/how-a-windows-programs-splits-its-command-line-into-individual-arguments/
 
-The latter two focus on the two functions that split a command line into argv.
+The latter two articles focus on the two functions that split a command line into argv.
 The website is down as of 2022-07-18, but the info there is not important.
-They had a lot of good visuals.
-
+They had a lot of very good visuals, however.
 ]]
 
--- Fortify str against CommandLineToArgv or parse_cmdline.
--- Only use this if the application splits its command line into argv using
--- these functions. Notoriously, echo does not do that.
-function escape.argv(str)
-	-- \t\r\n pass through StartProcess as-is, but escape.cmd mangles them
-	if str:find("[ \t\r\n]") then
-		-- Escape internal quotes, ensure trailing quote does not get escaped
-		-- and surround in quotes
-		return '"' .. str:gsub('(\\*)"', '%1%1\\"'):gsub('\\*$', '%1%1"')
-	else
-		-- Escape internal quotes
-		return str:gsub('(\\*)"', '%1%1\\"')
-	end
+local escape = {}
+
+-- Fortify str against Windows shell followed by CommandLineToArgv.
+function escape.unparse(str)
+	return escape.cmd(escape.argv(str))
 end
 
-function escape.dumbargv(str)
+function escape.unparseDumb(str)
+	return '^"' .. str:gsub('(\\*)"', '%1%1\\"'):gsub('\\*$', '%1%1"')
+		:gsub("[\t\r\n]+", " "):gsub("[()<>&|^!%%\"]", "^%0")
+end
+
+--[[
+Fortify str against CommandLineToArgv or parse_cmdline.
+TODO: research whether \t\r\n count as command separator characters.
+\t\r\n can pass through StartProcess just fine. [citation needed]
+]]
+function escape.argv(str)
+	-- Escape internal quotes. If the string has to be quoted,
+	-- then also escape trailing backslashes.
+	return str:find("[ \t\r\n]")
+		and '"' .. str:gsub('(\\*)"', '%1%1\\"'):gsub('\\*$', '%1%1"')
+		or str:gsub('(\\*)"', '%1%1\\"')
+end
+
+function escape.argvDumb(str)
 	return '"' .. str:gsub('(\\*)"', '%1%1\\"'):gsub('\\*$', '%1%1"')
 end
 
-local function escapecmd(str)
-	return str:gsub("[()<>&|^!%%\"]", "^%0")
-end
--- Fortify string against cmd.exe.
--- Only use this if the command line passes through the shell (cmd.exe, system(), popen() of any kind etc.)
--- Does not do what escape.argv does.
+--[[
+Fortify string against cmd.exe.
+
+(): used in if, not always necessary to escape these
+<>: pipe from/to file
+&: end command
+|: pipe to another command
+^: escape
+": toggle interpretation of the above characters (not sure if (), though)
+%: env substitution
+!: env substitution in delayed expansion mode
+
+Most footgunningly, the backslash has no meaning to cmd.exe and an
+argv-escaped quote will toggle parsing of >, |, & etc. even "outside"
+of an "argument".
+For a demonstration, paste this into cmd.exe:
+	echo foo \" bar %userprofile% | asdf
+Instead of piping 'foo " bar' into 'asdf.exe', it echoes the whole
+thing because the " prevented cmd from interpreting the |. However,
+interpolation with %% (and !! in delayed expansion mode) are exempt
+from this quoting behavior.
+
+Newlines cannot be passed through the shell. [research needed]
+Tabs CAN be passed through shell execute as-is, but cause trouble when
+pasted into cmd.exe. In addition, per https://superuser.com/q/150116
+you can put line feeds into cmd.exe with alt+10 and they work fine with
+echo, but show up as ? (3f, question mark) in DumpArgs...
+]]
 function escape.cmd(str)
-	-- (): used in if, not always necessary to escape these
-	-- <>: pipe from/to file
-	-- &: end command
-	-- |: pipe to another command
-	-- ^: escape
-	-- !: env substitution in delayed expansion mode
-	-- %: env substitution
-	-- ": generally a nuisance
-	-- newlines cannot be passed through shell execute
-	-- tabs CAN be passed through shell execute as-is,
-	-- but cause trouble when pasted into cmd.exe
-	-- in addition, per https://superuser.com/q/150116
-	-- you can put line feeds into cmd.exe with alt+10
-	-- and they work fine with echo, but show up as ?
-	-- (3f, question mark) in DumpArgs...
+	-- Utility function to escape all cmd special characters.
+	local function escapecmd(str)
+		return str:gsub('[()<>&|^"%%!]', "^%0")
+	end
 	str = str:gsub("[\t\r\n]+", " ")
-	-- Lua patterns do not have lookahead or lookbehind, so the first segment
-	-- needs special care
-	local a, b = str:match('([^"]*)(.*)')
-	-- whether shell is looking at special characters
+	-- Whether cmd is currently looking for special characters ()<>@|^"
 	local quoted = false
-	
-	return escapecmd(a) .. b:gsub('(%^*")([^"]*)()', function(quote, unquote, last)
-		if #quote % 2 == 1 then -- if the quote remains unescaped
+	-- Lua patterns do not have alternation with ^$ or lookahead/behind,
+	-- so the segment before the first quote needs special care.
+	local a, b = str:match('([^"]*)(.*)')
+	-- TODO: investigate perf of last += #match like in the js port.
+	local len = #b
+	return escapecmd(a) .. b:gsub('"([^"]*)()', function(section, last)
+		if quoted == false then
+			-- Unquoted, escape the string.
 			quoted = not quoted
-		end
-		
-		if not quoted then
-			return quote .. escapecmd(unquote)
-			
-		elseif unquote:find("[!%%]") or last > #b then
-			-- we're in quoted mode, but there is a dangerous character
-			-- (!% work even in quotes) or we're about to finish while
-			-- in quoted mode, so we must re-enable special characters
-			-- (specifically ^) and escape them for good
-			quoted = not quoted
-			return "^" .. quote .. escapecmd(unquote)
-			
+			return '"' .. escapecmd(section)
+		elseif last > len or section:find("[!%%]") then
+			-- We're in quoted mode, but there is a dangerous character
+			-- ([!%] will work in quotes) or we're about to finish while
+			-- in quoted mode, so we must escape the quote to be able to
+			-- quote the string.
+			-- TODO: investigate whether if's () work inside quotes.
+			return '^"' .. escapecmd(section)
 		else
-			-- we're in quoted mode and there are no dangerous characters
-			return quote .. unquote
+			-- We're in quoted mode and the quotes suffice to escape the string.
+			-- TODO: investigate perf of returning the match like the js port.
+			quoted = not quoted
+			return '"' .. section
 		end
 	end)
 end
 
-function escape.dumbcmd(str)
-	return str:gsub("[\t\r\n]+", " "):gsub("[()<>&|^!%%\"]", "^%0")
-end
-
--- Fortify str against Windows cmd followed by CommandLineToArgvW.
-function escape.unparse(str)
-	return escape.cmd(escape.argv(str))
+function escape.cmdDumb(str)
+	return str:gsub("[\t\r\n]+", " "):gsub('[()<>&|^"%%!]', "^%0")
 end
 
 --[[
@@ -183,4 +230,5 @@ do
 		return str
 	end
 end
+
 return escape

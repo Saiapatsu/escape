@@ -22,11 +22,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-// Javascript ports of some of the functions in init.lua
+/*
+Javascript ports of some of the functions in init.lua.
+Please read init.lua for info and documentation.
 
-// Fortify str against CommandLineToArgv or parse_cmdline.
-// Only use this if the application splits its command line into argv using
-// these functions. Notoriously, echo does not do that.
+Not copying over the comments is irresponsible, but these are just
+ports and not having to fix up the comments in every single port
+when I feel like slightly adjusting them is not my cup of tea.
+*/
+
+function unparse(str) {
+	return escapeCmd(escapeArgv(str));
+}
+
+function unparseDumb(str) {
+	return '^"' + str.replace(/(\\*)"/g, '$1$1\\"').replace(/\\*$/, '$&$&"')
+		.replace(/[\t\r\n]+/g, " ").replace(/[()<>&|^"%!]/g, "^$&");
+}
+
 function escapeArgv(str) {
 	return / \t\r\n/.test(str)
 		? '"' + str.replace(/(\\*)"/g, '$1$1\\"').replace(/\\*$/, '$&$&"')
@@ -37,37 +50,27 @@ function escapeArgvDumb(str) {
 	return '"' + str.replace(/(\\*)"/g, '$1$1\\"').replace(/\\*$/, '$&$&"');
 }
 
-// Fortify string against cmd.exe.
-// Only use this if the command line passes through the shell (cmd.exe, system(), popen() of any kind etc.)
-// Does not do what escape.argv does.
 function escapeCmd(str) {
 	function cmdescape(str) {
-		return str.replace(/[()<>&|^!%"]/g, "^$&");
+		return str.replace(/[()<>&|^"%!]/g, "^$&");
 	}
 	str = str.replace(/[\t\r\n]+/g, " ");
 	let quoted = false;
-	let last = 0;
-	return str.replace(/(\^*"|^)([^"]*)/g, (match, quote, unquote) => {
-		last += match.length; // silly workaround for the lack of lua's () in regex
-		if (quote.length & 1) {
+	let last = 0, len = str.length;
+	return str.replace(/("|^)([^"]*)/g, (match, quote, section) => {
+		last += match.length;
+		if (quoted === false) {
 			quoted = !quoted;
-		}
-		if (!quoted) {
-			return quote + cmdescape(unquote);
-		} else if (/[!%]/.test(unquote) || last == str.length) {
-			quoted = !quoted;
-			return "^" + quote + cmdescape(unquote);
+			return '"' + cmdescape(section);
+		} else if (last === len || /[!%]/.test(section)) {
+			return '^"' + quote + cmdescape(section);
 		} else {
-			return quote + unquote;
+			quoted = !quoted;
+			return match;
 		}
 	});
 }
 
 function escapeCmdDumb(str) {
 	return str.replace(/[\t\r\n]+/g, " ").replace(/[()<>&|^!%"]/g, "^$&");
-}
-
-// Fortify str against Windows cmd followed by CommandLineToArgvW.
-function unparse(str) {
-	return escapeCmd(escapeArgv(str));
 }
