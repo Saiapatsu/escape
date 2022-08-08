@@ -147,7 +147,7 @@ function escape.cmd(str)
 	end
 	str = str:gsub("[\t\r\n]+", " ")
 	-- Whether cmd is currently looking for special characters ()<>@|^"
-	local quoted = false
+	local quoted = true
 	-- Lua patterns do not have alternation with ^$ or lookahead/behind,
 	-- so the segment before the first quote needs special care.
 	local a, b = str:match('([^"]*)(.*)')
