@@ -41,7 +41,7 @@ function unparseDumb(str) {
 }
 
 function escapeArgv(str) {
-	return / \t\r\n/.test(str)
+	return /[ \t\r\n]/.test(str)
 		? '"' + str.replace(/(\\*)"/g, '$1$1\\"').replace(/\\*$/, '$&$&"')
 		: str.replace(/(\\*)"/g, '$1$1\\"');
 }
