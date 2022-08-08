@@ -1,91 +1,6 @@
---[[
-MIT License
-
-Copyright (c) 2022 twiswist
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-]]
-
---[[
-If your string is an argument to a program executed through the
-shell, such as with system(), popen(), ShellExecute or similar
-and the program splits its command line using CommandLineToArgv
-or parse_cmdline, implicitly or explicitly, then use unparse().
-This quotes the string and escapes quotes and shell characters.
-
-If your string is an argument to a program executed through
-CreateProcess or similar that don't do shelly things and the
-program splits its command line using CommandLineToArgv or
-parse_cmdline, implicitly or explicitly, then use argv().
-This escapes quotes, then surrounds the string in quotes.
-
-If your string is a shell redirection target, then use redirect().
-This escapes shell characters and quotes the string.
-Also prefer this undocumented cmd syntax which prevents a number
-from being placed to the left of a > symbol:
-	>"foo bar" echo 123456
-This command will echo "123456" to the file "foo bar", whereas:
-	echo 123456>"foo bar"
-... attempts to redirect the 6th standard stream.
-You only need to do this for commands that do not split arguments
-or otherwise aren't sensitive to a space before the <, which is
-another way to prevent this from happening.
-
-If your string will pass through the shell to a command that does
-not split its arguments, such as set, echo etc., then use cmd().
-This only escapes shell characters.
-
-If your string will pass through CreateProcess to a command that
-doesn't split its arguments, then your string does not need to be
-escaped.
-
-"cmd", "cmd.exe" and "shell" are used interchangeably in these docs.
-
-These functions attempt to minimize the amount of characters used
-to escape.
-For example, argv() will not surround the string in quotes if it
-has no spaces. It will still escape quotes.
-The Dumb variants will not check the contents of string and just
-escape everything, even if redundant.
-argvDumb() will always surround in quotes and cmdDumb() will stick
-carets on every special character, even though quotes suppress
-cmd.exe's behavior to some extent.
-
-The MIT License does not require you to provide public/user-facing
-attribution.
-
-Credits:
-
-2021-09-15:
-https://docs.microsoft.com/en-us/archive/blogs/twistylittlepassagesallalike/everyone-quotes-command-line-arguments-the-wrong-way
-http://www.windowsinspired.com/understanding-the-command-line-string-and-arguments-received-by-a-windows-program/
-http://www.windowsinspired.com/how-a-windows-programs-splits-its-command-line-into-individual-arguments/
-The latter two articles focus on the two functions that split a command line into argv.
-The website is down as of 2022-07-18, but the value in there was mostly in the illustrations.
-
-2022-08-07
-https://ss64.com/nt/syntax-redirection.html
-]]
-
 local escape = {}
 
--- Fortify str against Windows shell followed by CommandLineToArgv.
+-- Fortify a string argument against Windows shell followed by CommandLineToArgv.
 function escape.unparse(str)
 	return escape.cmd(escape.argv(str))
 end
@@ -216,7 +131,7 @@ unless buflen is 0 or something
 
 do any c string functions return the amount of chars written?
 
-if it's that simple to save/load-state, why not make it an iterator that returns one character at a time?
+if it's that simple to save/load-state, why not make it a function/iterator that returns one character at a time?
 
 ]]
 
