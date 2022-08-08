@@ -23,13 +23,17 @@ SOFTWARE.
 ]]
 
 --[[
-If your string will pass through the shell, e.g. system(), popen(),
-any sort of shell execute, essentially anything that you can do
-environment substitution like %userprofile% in, then use unparse().
+If your string is an argument to a program executed through the
+shell, such as with system(), popen(), ShellExecute or similar
+and the program splits its command line using CommandLineToArgv
+or parse_cmdline, implicitly or explicitly, then use unparse().
+This quotes the string and escapes quotes and shell characters.
 
-If your string will pass through CreateProcess and similar to a
-command that splits its arguments using CommandLineToArgv or
+If your string is an argument to a program executed through
+CreateProcess or similar that don't do shelly things and the
+program splits its command line using CommandLineToArgv or
 parse_cmdline, implicitly or explicitly, then use argv().
+This escapes quotes, then surrounds the string in quotes.
 
 If your string is a shell redirection target, then use redirect().
 This escapes shell characters and quotes the string.
@@ -45,15 +49,11 @@ another way to prevent this from happening.
 
 If your string will pass through the shell to a command that does
 not split its arguments, such as set, echo etc., then use cmd().
-For example, I've written a shim program that just changes directory
-and shell executes its command line verbatim. Said program's args
-need to be argv-escaped only once for the real target, but twice for
-both of the shell executions.
+This only escapes shell characters.
 
 If your string will pass through CreateProcess to a command that
 doesn't split its arguments, then your string does not need to be
 escaped.
-I can't name any such program off the top of my head.
 
 "cmd", "cmd.exe" and "shell" are used interchangeably in these docs.
 
@@ -70,15 +70,14 @@ cmd.exe's behavior to some extent.
 The MIT License does not require you to provide public/user-facing
 attribution.
 
-Informed by these articles as of 2021-09-15:
+Credits:
 
+2021-09-15:
 https://docs.microsoft.com/en-us/archive/blogs/twistylittlepassagesallalike/everyone-quotes-command-line-arguments-the-wrong-way
 http://www.windowsinspired.com/understanding-the-command-line-string-and-arguments-received-by-a-windows-program/
 http://www.windowsinspired.com/how-a-windows-programs-splits-its-command-line-into-individual-arguments/
-
 The latter two articles focus on the two functions that split a command line into argv.
-The website is down as of 2022-07-18, but the info there is not important.
-They had a lot of very good visuals, however.
+The website is down as of 2022-07-18, but the value in there was mostly in the illustrations.
 
 2022-08-07
 https://ss64.com/nt/syntax-redirection.html
@@ -97,7 +96,7 @@ function escape.unparseDumb(str)
 end
 
 --[[
-Fortify str against CommandLineToArgv or parse_cmdline.
+Fortify a string argument against CommandLineToArgv or parse_cmdline.
 TODO: research whether \t\r\n count as command separator characters.
 \t\r\n can pass through StartProcess just fine. [citation needed]
 ]]
@@ -114,7 +113,7 @@ function escape.argvDumb(str)
 end
 
 --[[
-Fortify string against cmd.exe.
+Fortify a string argument against cmd.exe.
 
 (): used in if, not always necessary to escape these
 <>: pipe from/to file
@@ -216,6 +215,8 @@ regardless of outcome, endstr will be set and will point to \0
 unless buflen is 0 or something
 
 do any c string functions return the amount of chars written?
+
+if it's that simple to save/load-state, why not make it an iterator that returns one character at a time?
 
 ]]
 
