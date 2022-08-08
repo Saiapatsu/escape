@@ -31,6 +31,18 @@ If your string will pass through CreateProcess and similar to a
 command that splits its arguments using CommandLineToArgv or
 parse_cmdline, implicitly or explicitly, then use argv().
 
+If your string is a shell redirection target, then use redirect().
+This escapes shell characters and quotes the string.
+Also prefer this undocumented cmd syntax which prevents a number
+from being placed to the left of a > symbol:
+	>"foo bar" echo 123456
+This command will echo "123456" to the file "foo bar", whereas:
+	echo 123456>"foo bar"
+... attempts to redirect the 6th standard stream.
+You only need to do this for commands that do not split arguments
+or otherwise aren't sensitive to a space before the <, which is
+another way to prevent this from happening.
+
 If your string will pass through the shell to a command that does
 not split its arguments, such as set, echo etc., then use cmd().
 For example, I've written a shim program that just changes directory
@@ -67,6 +79,9 @@ http://www.windowsinspired.com/how-a-windows-programs-splits-its-command-line-in
 The latter two articles focus on the two functions that split a command line into argv.
 The website is down as of 2022-07-18, but the info there is not important.
 They had a lot of very good visuals, however.
+
+2022-08-07
+https://ss64.com/nt/syntax-redirection.html
 ]]
 
 local escape = {}
@@ -162,6 +177,20 @@ end
 
 function escape.cmdDumb(str)
 	return str:gsub("[\t\r\n]+", " "):gsub('[()<>&|^"%%!]', "^%0")
+end
+
+--[[
+Fortify a shell redirection target filename.
+]]
+function escape.redirect(str)
+	str = escape.cmd(str)
+	return str:find("[ \t\r\n]")
+		and '"' .. str .. '"'
+		or str
+end
+
+function escape.redirectDumb(str)
+	return '"' .. str:gsub("[\t\r\n]+", " "):gsub('[()<>&|^"%%!]', "^%0") .. '"'
 end
 
 --[[

@@ -74,3 +74,11 @@ function escapeCmd(str) {
 function escapeCmdDumb(str) {
 	return str.replace(/[\t\r\n]+/g, " ").replace(/[()<>&|^!%"]/g, "^$&");
 }
+
+function escapeRedirect(str) {
+	return /[ \t\r\n]/.test(str) ? '"' + escapeCmd(str) + '"' : escapeCmd(str);
+}
+
+function escapeRedirectDumb(str) {
+	return '"' + str.replace(/[\t\r\n]+/g, " ").replace(/[()<>&|^!%"]/g, "^$&") + '"';
+}
