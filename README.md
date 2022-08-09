@@ -3,10 +3,10 @@
 Routines for escaping command line arguments on Windows.
 
 * `init.lua` is the primary file.
-* `escape.js` contains spartan Javascript ports for each function in `init.lua` except for `filename()`.
+* `escape.js` contains spartan Javascript ports for each function in `init.lua`, except for `filename()`.
 
 The functions attempt to minimize the amount of characters used to escape the string.  
-The dumb variants of each function are less complicated, and will not check the contents of the string, even if doing so escapes redundantly/overly cautiously.
+The dumb variants of each function are less complicated and will not check the contents of the string, even if doing so escapes redundantly/overly cautiously.
 
 For example, `cmd` will take it easy within quotes and `argv` will not quote the string if it contains no whitespace.  
 Conversely, `argvDumb` will always surround the string in quotes and `cmdDumb` will attach a caret to every special character (as recommended in "*Everyone quotes command line arguments the wrong way*"), even though quotes suppress cmd.exe's behavior to some extent.
