@@ -20,7 +20,7 @@ function escape.argv(str)
 	-- then also escape trailing backslashes.
 	return str:find("[ \t\r\n]")
 		and '"' .. str:gsub('(\\*)"', '%1%1\\"'):gsub('\\*$', '%1%1"')
-		or str:gsub('(\\*)"', '%1%1\\"')
+		or (str:gsub('(\\*)"', '%1%1\\"'))
 end
 
 function escape.argvDumb(str)
@@ -30,7 +30,7 @@ end
 --[[
 Fortify a string argument against cmd.exe.
 
-(): used in if, not always necessary to escape these
+(): split across multiple lines
 <>: pipe from/to file
 &: end command
 |: pipe to another command
@@ -53,15 +53,18 @@ Newlines cannot be passed through the shell. [research needed]
 Tabs CAN be passed through shell execute as-is, but cause trouble when
 pasted into cmd.exe. In addition, per https://superuser.com/q/150116
 you can put line feeds into cmd.exe with alt+10 and they work fine with
-echo, but show up as ? (3f, question mark) in DumpArgs...
+echo, but show up as ? (3f, question mark) in DumpArgs, which might
+be just an encoding issue.
 ]]
 function escape.cmd(str)
 	-- Utility function to escape all cmd special characters.
 	local function escapecmd(str)
-		return str:gsub('[()<>&|^"%%!]', "^%0")
+		return (str:gsub('[()<>&|^%%!]', "^%0"))
 	end
+	-- Get rid of characters that cause trouble when pasted into cmd.
 	str = str:gsub("[\t\r\n]+", " ")
-	-- Whether cmd is currently looking for special characters ()<>@|^"
+	-- Quote state of `section` in that gsub below.
+	-- Starts out the opposite of what you'd expect because of `a`.
 	local quoted = true
 	-- Lua patterns do not have alternation with ^$ or lookahead/behind,
 	-- so the segment before the first quote needs special care.
@@ -73,15 +76,11 @@ function escape.cmd(str)
 			-- Unquoted, escape the string.
 			quoted = not quoted
 			return '"' .. escapecmd(section)
-		elseif last > len or section:find("[!%%]") then
-			-- We're in quoted mode, but there is a dangerous character
-			-- ([!%] will work in quotes) or we're about to finish while
-			-- in quoted mode, so we must escape the quote to be able to
-			-- quote the string.
-			-- TODO: investigate whether if's () work inside quotes.
+		elseif last > len or section:find("[!%%]") then -- and quoted == true
+			-- Do not finish in an unquoted state or leave ! or % unescaped.
 			return '^"' .. escapecmd(section)
 		else
-			-- We're in quoted mode and the quotes suffice to escape the string.
+			-- The quotes suffice to escape the string.
 			-- TODO: investigate perf of returning the match like the js port.
 			quoted = not quoted
 			return '"' .. section
@@ -90,21 +89,33 @@ function escape.cmd(str)
 end
 
 function escape.cmdDumb(str)
-	return str:gsub("[\t\r\n]+", " "):gsub('[()<>&|^"%%!]', "^%0")
+	return (str:gsub("[\t\r\n]+", " "):gsub('[()<>&|^"%%!]', "^%0"))
 end
 
 --[[
-Fortify a shell redirection target filename.
+Fortify a filename against shell redirection.
+Assumes str is a valid filename and thus contains no tabs, carriage
+returns, line feeds, shell symbols or quotes that could 0wn the shell.
 ]]
 function escape.redirect(str)
-	str = escape.cmd(str)
-	return str:find("[ \t\r\n]")
-		and '"' .. str .. '"'
-		or str
+	return ('"' .. str:gsub("%%", "%%%%") .. '"')
+	-- If there is more than one special character, surround in quotes,
+	-- otherwise escape just that one character
+	-- return str:find("[ &^][^ &^]*[ &^]")
+		-- and '"' .. str:gsub("%%", "%%%%") .. '"'
+		-- or (str:gsub('[ &^]', "^%0"):gsub("%%", "%%%%"))
 end
 
-function escape.redirectDumb(str)
-	return '"' .. str:gsub("[\t\r\n]+", " "):gsub('[()<>&|^"%%!]', "^%0") .. '"'
+-- function escape.redirectDumb(str)
+	-- -- Probably not a complete list - needs testing
+	-- return (str:gsub('[ &^]', "^%0"):gsub("%%", "%%%%"))
+-- end
+
+--[[
+Fortify exclamation marks in a string against delayed expansion.
+]]
+function escape.delayed(str)
+	return (str:gsub("!", "^!"))
 end
 
 --[[

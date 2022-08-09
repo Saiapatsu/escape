@@ -17,31 +17,45 @@ Conversely, `argvDumb` will always surround the string in quotes and `cmdDumb` w
 If your string is an argument to a program executed through the
 shell, such as with `system`, `popen`, `ShellExecute` or similar
 and the program splits its command line using `CommandLineToArgv`
-or `parse_cmdline`, implicitly or explicitly, then use `unparse`.
-This quotes the string and escapes quotes and shell characters.
+or `parse_cmdline`, implicitly or explicitly, then use `unparse`.  
+This argv-escapes and then shell-escapes the string, read how that happens below.
 
 ### argv
 If your string is an argument to a program executed through
 `CreateProcess` or similar that don't do shelly things and the
 program splits its command line using `CommandLineToArgv` or
-`parse_cmdline`, implicitly or explicitly, then use `argv`.
+`parse_cmdline`, implicitly or explicitly, then use `argv`.  
 This escapes quotes, then surrounds the string in quotes.
 
 ### redirect
-If your string is a shell redirection target filename, then use
-`redirect`. This escapes shell characters and spaces.
+If your string is a shell redirection target filename, then use `redirect`.  
+This escapes shell characters and spaces.
 
 `redirect` trusts that your string is already a valid NTFS file path.
 It does not sanitize filenames, you are responsible for doing that.
 
 ### cmd
-If your string is an argument to a program that does not split its arguments (uses `GetCommandLine` instead of `argv[]`) being executed through the shell, such as `set`, `echo` etc., then use `cmd`.
+If your string is an argument to a program that does not split its arguments (uses `GetCommandLine` instead of `argv[]`) being executed through the shell, such as `set`, `echo` etc., then use `cmd`.  
 This only escapes shell characters.
+
+`cmd` also turns tabs, carriage returns and line feeds into spaces in an attempt to make the string safe to paste into a command prompt.  
+That's not a good idea, but they get lost in transit in other ways most of the time, anyway.
 
 ### Nothing
 If your string will pass through `CreateProcess` to a program that
 doesn't split its arguments, then your string does not need to be
 escaped.
+
+### Delayed expansion
+If delayed expansion is enabled in the shell for whatever reason, then use `delayed` on strings immediately before shell-escaping.  
+This will shell-escape exclamation points. The caret and exclamation point get shell-escaped a second time.
+
+Escaping delayed 
+
+### Pipes
+
+Pipes spawn extra shells which parse the two halves of the command line at least one more time.
+(todo: elaborate)
 
 ## Warning about redirection
 
@@ -65,7 +79,7 @@ echo 12345^6>numbers
 >numbers echo 123456
 ```
 
-The first option adds a trailing space to the command line which `argv`-using/command line-splitting programs safely ignore. `echo`, `set` etc. are sensitive to this space, however.
+The first option adds a trailing space to the command line, which `argv`-using/command line-splitting programs safely ignore. `echo`, `set` etc. are sensitive to this space, however.
 
 `escape` has no function for the second option.
 

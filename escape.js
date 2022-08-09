@@ -43,9 +43,9 @@ function escapeCmdDumb(str) {
 }
 
 function escapeRedirect(str) {
-	return /[ \t\r\n]/.test(str) ? '"' + escapeCmd(str) + '"' : escapeCmd(str);
+	return '"' + str.replace(/%/g, "%%") + '"';
 }
 
-function escapeRedirectDumb(str) {
-	return '"' + str.replace(/[\t\r\n]+/g, " ").replace(/[()<>&|^!%"]/g, "^$&") + '"';
+function escapeDelayed(str) {
+	return str.replace(/!/g, "^!");
 }
