@@ -2,6 +2,8 @@
 
 Routines for escaping command line arguments on Windows.
 
+**At the moment, cmd() (and thus, unparse()) is broken in JavaScript, prefer cmdDumb**
+
 * `init.lua` is the primary file.
 * `escape.js` contains spartan Javascript ports for each function in `init.lua`, except for `filename()`.
 
