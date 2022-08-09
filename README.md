@@ -9,9 +9,7 @@ The functions attempt to minimize the amount of characters used to escape the st
 The dumb variants of each function are less complicated and will not check the contents of the string, even if doing so escapes redundantly/overly cautiously.
 
 For example, `cmd` will take it easy within quotes and `argv` will not quote the string if it contains no whitespace.  
-Conversely, `argvDumb` will always surround the string in quotes and `cmdDumb` will attach a caret to every special character (as recommended in "*Everyone quotes command line arguments the wrong way*"), even though quotes suppress cmd.exe's behavior to some extent.
-
-"cmd", "cmd.exe" and "shell" are used interchangeably in this code and documentation.
+Conversely, `argvDumb` will always surround the string in quotes and `cmdDumb` will attach a caret to every special character (as recommended in "*Everyone quotes command line arguments the wrong way*"), even though quotes suppress the shell's behavior to some extent.
 
 ## Usage
 
@@ -22,21 +20,6 @@ and the program splits its command line using `CommandLineToArgv`
 or `parse_cmdline`, implicitly or explicitly, then use `unparse`.
 This quotes the string and escapes quotes and shell characters.
 
-Example of a script that uses `unparse`:
-```lua
-local unparse = require "escape".unparse
-local script, inpath = unpack(args)
-local magick = io.popen(table.concat({
-	"magick",
-	unparse(inpath),
-	"-depth 8",
-	"RGBA:-",
-}, " "), "rb")
-local str = magick:read("*a")
-magick:close()
-print(#str)
-```
-
 ### argv
 If your string is an argument to a program executed through
 `CreateProcess` or similar that don't do shelly things and the
@@ -45,22 +28,11 @@ program splits its command line using `CommandLineToArgv` or
 This escapes quotes, then surrounds the string in quotes.
 
 ### redirect
-If your string is a shell redirection target, then use `redirect`.
-This escapes shell characters and quotes the string.
+If your string is a shell redirection target filename, then use
+`redirect`. This escapes shell characters and spaces.
 
-Also prefer this undocumented cmd syntax which prevents a number
-from being placed to the left of a `>`:
-```
->"foo bar" echo 123456
-```
-This command will echo `123456` to the file `foo bar`, whereas:
-```
-echo 123456>"foo bar"
-```
-... attempts to redirect the 6th standard stream to a file.  
-You only need to do this for programs that do not split arguments
-or otherwise aren't sensitive to a space before the `<`, which is
-another way to prevent this from happening.
+`redirect` trusts that your string is already a valid NTFS file path.
+It does not sanitize filenames, you are responsible for doing that.
 
 ### cmd
 If your string is an argument to a program that does not split its arguments (uses `GetCommandLine` instead of `argv[]`) being executed through the shell, such as `set`, `echo` etc., then use `cmd`.
@@ -70,6 +42,41 @@ This only escapes shell characters.
 If your string will pass through `CreateProcess` to a program that
 doesn't split its arguments, then your string does not need to be
 escaped.
+
+## Warning about redirection
+
+A numeral before a `>` or `>>` specifies which IO stream the shell will redirect. A numeral may be unintentionally placed before a `>`:
+```
+echo 123456>numbers
+```
+This command will execute `echo 12345` and pipe the 6th io stream to `numbers`.
+
+There are three ways to mitigate this:
+* put a space before `>`;
+```
+echo 123456 >numbers
+```
+* escape the numeral with a caret;
+```
+echo 12345^6>numbers
+```
+* move the redirection to the left of the command.
+```
+>numbers echo 123456
+```
+
+The first option adds a trailing space to the command line which `argv`-using/command line-splitting programs safely ignore. `echo`, `set` etc. are sensitive to this space, however.
+
+`escape` has no function for the second option.
+
+The third option is undocumented and bizarre syntax, but works for any command.
+
+## Other
+
+The separation between `cmd` and `argv` seems to be a uniquely Windows thing and these methods aren't really applicable to Linux.  
+On Windows, the shell is responsible for splitting commands on `&`, `>` etc. and passing entire command line strings, which then split it on space characters independently, but can choose to just use `GetCommandLine` and use it as-is or split it in another way (a horrible idea).  
+On the other hand, it is not possible to get the un-split command line in Linux and "gluing it back together" loses some information about spaces.  
+You can't know what the shell saw neither in Linux nor in Windows.
 
 ## License
 
