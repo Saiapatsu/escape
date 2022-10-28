@@ -6,7 +6,7 @@ function escape.unparse(str)
 end
 
 function escape.unparseDumb(str)
-	return '^"' .. str:gsub('(\\*)"', '%1%1\\"'):gsub('\\*$', '%1%1"')
+	return '^"' .. str:gsub('(\\*)"', '%1%1\\"'):gsub('\\*$', '%1%1"', 1)
 		:gsub("[\t\r\n]+", " "):gsub("[()<>&|^!%%\"]", "^%0")
 end
 
@@ -19,12 +19,12 @@ function escape.argv(str)
 	-- Escape internal quotes. If the string has to be quoted,
 	-- then also escape trailing backslashes.
 	return str:find("[ \t\r\n]")
-		and '"' .. str:gsub('(\\*)"', '%1%1\\"'):gsub('\\*$', '%1%1"')
+		and '"' .. str:gsub('(\\*)"', '%1%1\\"'):gsub('\\*$', '%1%1"', 1)
 		or (str:gsub('(\\*)"', '%1%1\\"'))
 end
 
 function escape.argvDumb(str)
-	return '"' .. str:gsub('(\\*)"', '%1%1\\"'):gsub('\\*$', '%1%1"')
+	return '"' .. str:gsub('(\\*)"', '%1%1\\"'):gsub('\\*$', '%1%1"', 1)
 end
 
 --[[
