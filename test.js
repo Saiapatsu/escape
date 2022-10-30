@@ -19,6 +19,7 @@ tests.split("\n\n").map(x => x.split("\n")).forEach(lines => {
 			console.log("Test: " + test);
 			console.log("Expected: " + expected);
 			console.log("Result: " + result);
+			console.log();
 			failures++;
 		}
 	});

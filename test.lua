@@ -26,6 +26,7 @@ while true do
 			print("Test:     " .. test)
 			print("Expected: " .. expected)
 			print("Result:   " .. result)
+			print()
 			failures = failures + 1
 		end
 	end
