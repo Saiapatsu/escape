@@ -1,4 +1,8 @@
--- test.lua < tests.txt
+--[[
+Lua escape function tester
+Pipe tests.txt to this script:
+test.lua < tests.txt
+]]
 
 local escape = require "escape"
 local line = io.lines()
