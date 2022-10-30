@@ -18,11 +18,11 @@ import System.IO; // File
 // how to ensure that the stuff in escape.js ends up in the global scope.
 // Maybe escape.js is running after test.js? It isn't.
 // Nor did I want to pollute escape.js with JScript stuff.
-const foobar = eval(File.ReadAllText("escape.js") + ";({unparse:unparse});");
-
-const methods = [
-	["unparse", foobar.unparse],
-];
+const methods = eval(File.ReadAllText("escape.js")
+	+ ';['
+		+ '["unparse", unparse]'
+	+ '];'
+);
 
 var count = 0;
 var failures = 0;
