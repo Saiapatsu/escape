@@ -1,5 +1,6 @@
 --[[
-Lua escape function tester
+Lua escape function tester.
+Requires Luvit.
 Pipe tests.txt to this script:
 test.lua < tests.txt
 ]]
