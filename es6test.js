@@ -1,6 +1,7 @@
 /*
-Javascript escape function tester
-Execute escape.js in a browser's console, then paste tests.txt between the `` and run this script.
+Javascript escape function tester.
+Requires an interactive environment with ES6, such as a browser console.
+Execute escape.js, then paste the contents of tests.txt between the `` and run this script.
 */
 
 ((tests)=>{
