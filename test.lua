@@ -17,8 +17,8 @@ local failures = 0
 while true do
 	local test = line()
 	if test == nil or test == "" then break end
-	count = count + 1
 	for _,v in ipairs(methods) do
+		count = count + 1
 		local name, method = unpack(v)
 		local expected = line()
 		local result = method(test)

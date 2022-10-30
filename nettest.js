@@ -30,9 +30,9 @@ var failures = 0;
 while (1) {
 	const test = Console.ReadLine();
 	if (!test) break;
-	count++;
 	// ECMAScript 3 does not have Array.forEach
 	for (var i = 0; i < methods.length; i++) {
+		count++;
 		const pair = methods[i], name = pair[0], method = pair[1];
 		const expected = Console.ReadLine();
 		const result = method(test);

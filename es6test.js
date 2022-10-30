@@ -11,8 +11,8 @@ const methods = [
 var count = 0, failures = 0;
 tests.split("\n\n").map(x => x.split("\n")).forEach(lines => {
 	const test = lines[0];
-	count++;
 	methods.forEach(([name, method], index) => {
+		count++;
 		const expected = lines[index + 1];
 		const result = method(test);
 		if (result !== expected) {
