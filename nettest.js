@@ -20,7 +20,12 @@ import System.IO; // File
 // Nor did I want to pollute escape.js with JScript stuff.
 const methods = eval(File.ReadAllText("escape.js")
 	+ ';['
-		+ '["unparse", unparse]'
+		+ '["unparse", unparse],'
+		+ '["unparseDumb", unparseDumb],'
+		+ '["argv", escapeArgv],'
+		+ '["argvDumb", escapeArgvDumb],'
+		+ '["cmd", escapeCmd],'
+		+ '["cmdDumb", escapeCmdDumb],'
 	+ '];'
 );
 

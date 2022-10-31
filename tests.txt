@@ -1,26 +1,72 @@
 foobar
 foobar
+^"foobar^"
+foobar
+"foobar"
+foobar
+foobar
 
 has spaces
 "has spaces"
+^"has spaces^"
+"has spaces"
+"has spaces"
+has spaces
+has spaces
 
 trailing and\ internal\\\" quote\\"
 "trailing and\ internal\\\\\\\" quote\\\\\""
+^"trailing and\ internal\\\\\\\^" quote\\\\\^"^"
+"trailing and\ internal\\\\\\\" quote\\\\\""
+"trailing and\ internal\\\\\\\" quote\\\\\""
+trailing and\ internal\\\" quote\\"
+trailing and\ internal\\\^" quote\\^"
 
 trailing backslash with internal space\
 "trailing backslash with internal space\\"
+^"trailing backslash with internal space\\^"
+"trailing backslash with internal space\\"
+"trailing backslash with internal space\\"
+trailing backslash with internal space\
+trailing backslash with internal space\
 
 1|2|3
+1^|2^|3
+^"1^|2^|3^"
+1|2|3
+"1|2|3"
+1^|2^|3
 1^|2^|3
 
 1 | 2 | 3
 "1 | 2 | 3"
+^"1 ^| 2 ^| 3^"
+"1 | 2 | 3"
+"1 | 2 | 3"
+1 ^| 2 ^| 3
+1 ^| 2 ^| 3
 
 1 | "2 | "3
 "1 | \"2 ^| \"3"
+^"1 ^| \^"2 ^| \^"3^"
+"1 | \"2 | \"3"
+"1 | \"2 | \"3"
+1 ^| "2 | "3
+1 ^| ^"2 ^| ^"3
 
 "1 | 2 | 3
 "\"1 ^| 2 ^| 3^"
+^"\^"1 ^| 2 ^| 3^"
+"\"1 | 2 | 3"
+"\"1 | 2 | 3"
+^"1 ^| 2 ^| 3
+^"1 ^| 2 ^| 3
 
 100% concentrated power of will
 ^"100^% concentrated power of will^"
+^"100^% concentrated power of will^"
+"100% concentrated power of will"
+"100% concentrated power of will"
+100^% concentrated power of will
+100^% concentrated power of will
+

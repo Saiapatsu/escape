@@ -9,6 +9,11 @@ local escape = require "escape"
 local line = io.lines()
 local methods = {
 	{"unparse", escape.unparse},
+	{"unparseDumb", escape.unparseDumb},
+	{"argv", escape.argv},
+	{"argvDumb", escape.argvDumb},
+	{"cmd", escape.cmd},
+	{"cmdDumb", escape.cmdDumb},
 }
 
 -- luvit print can only print to tty
