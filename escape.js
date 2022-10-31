@@ -22,15 +22,15 @@ function escapeCmd(str) {
 		return str.replace(/[()<>&|^"%!]/g, "^$&");
 	}
 	str = str.replace(/[\t\r\n]+/g, " ");
-	let quoted = false;
-	let last = 0, len = str.length;
-	return str.replace(/("|^)([^"]*)/g, (match, quote, section) => {
+	var quoted = false;
+	var last = 0, len = str.length;
+	return str.replace(/("|^)([^"]*)/g, function(match, quote, section) {
 		last += match.length;
 		if (quoted === false) {
 			quoted = !quoted;
-			return '"' + cmdescape(section);
+			return quote + cmdescape(section);
 		} else if (last === len || /[!%]/.test(section)) {
-			return '^"' + quote + cmdescape(section);
+			return '^' + quote + cmdescape(section);
 		} else {
 			quoted = !quoted;
 			return match;
