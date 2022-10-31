@@ -2,16 +2,14 @@
 
 Routines for escaping command line arguments on Windows.
 
-**At the moment, cmd() (and thus, unparse()) is broken in JavaScript, prefer cmdDumb**
-
 * `init.lua` is the primary file.
-* `escape.js` contains spartan Javascript ports for each function in `init.lua`, except for `filename()`.
+* `escape.js` contains spartan Javascript ports for many functions in `init.lua`.
 
 The functions attempt to minimize the amount of characters used to escape the string.  
 The dumb variants of each function are less complicated and will not check the contents of the string, even if doing so escapes redundantly/overly cautiously.
 
 For example, `cmd` will take it easy within quotes and `argv` will not quote the string if it contains no whitespace.  
-Conversely, `argvDumb` will always surround the string in quotes and `cmdDumb` will attach a caret to every special character (as recommended in "*Everyone quotes command line arguments the wrong way*"), even though quotes suppress the shell's behavior to some extent.
+Conversely, `argvDumb` will always surround the string in quotes and `cmdDumb` will attach a caret to every special character (as recommended in "*Everyone quotes command line arguments the wrong way*"), even though that's incredibly ugly and redundant.
 
 ## Usage
 
@@ -34,7 +32,7 @@ If your string is a shell redirection target filename, then use `redirect`.
 This escapes shell characters and spaces.
 
 `redirect` trusts that your string is already a valid NTFS file path.
-It does not sanitize filenames, you are responsible for doing that.
+It does not sanitize filenames, you are responsible for doing so.
 
 ### cmd
 If your string is an argument to a program that does not split its arguments (uses `GetCommandLine` instead of `argv[]`) being executed through the shell, such as `set`, `echo` etc., then use `cmd`.  
@@ -56,8 +54,8 @@ Escaping delayed
 
 ### Pipes
 
-Pipes spawn extra shells which parse the two halves of the command line at least one more time.
-(todo: elaborate)
+Pipes spawn extra shells which parse the two halves of the command line at least one more time.  
+I haven't done much research on this - please refer to [the SS64 article](https://ss64.com/nt/syntax-redirection.html).
 
 ## Warning about redirection
 
@@ -98,10 +96,10 @@ You can't know what the shell saw neither in Linux nor in Windows.
 
 These functions and this README are distributed under the terms of the MIT License.
 
-I feel that it's kind of strange to pull in an entire license with any of these one-liners, though. Well, what can you do.
+Because they are meant to be cherry-picked and copy-pasted instead of being consumed as a library, I feel that it's kind of strange to pull in an entire license with the one-liner functions. Well, what can you do.
 
-The MIT License does not require you to provide public/user-facing
-attribution.
+The MIT License does not require you to provide public/user-facing attribution.
+Attribution in the code is enough.
 
 ## Credits
 
