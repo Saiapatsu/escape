@@ -37,10 +37,10 @@ while (1) {
 		const expected = Console.ReadLine();
 		const result = method(test);
 		if (result !== expected) {
-			Console.WriteLine("Failed " + name);
-			Console.WriteLine("Test: " + test);
+			Console.WriteLine("Failed    " + name);
+			Console.WriteLine("Test:     " + test);
 			Console.WriteLine("Expected: " + expected);
-			Console.WriteLine("Result: " + result);
+			Console.WriteLine("Result:   " + result);
 			Console.WriteLine();
 			failures++;
 		}
