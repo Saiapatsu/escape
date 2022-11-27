@@ -92,6 +92,8 @@ On Windows, the shell is responsible for splitting commands on `&`, `>` etc. and
 On the other hand, it is not possible to get the un-split command line in Linux and "gluing it back together" loses some information about spaces.  
 You can't know what the shell saw neither in Linux nor in Windows.
 
+[lua-subproc](https://github.com/faithanalog/lua-subproc) appears to be a `sh` or Linux equivalent to this script.
+
 ## License
 
 These functions and this README are distributed under the terms of the MIT License.
