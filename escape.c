@@ -1,11 +1,12 @@
 #include <stdio.h>
 
-void main() {
-	char inBuf[] = "trailing and\\ in\"ternal\\\\\\\" quote\\\\\"";
-	char outBuf[100];
-	char *in = inBuf;
-	char *out = outBuf;
-	
+int argvDumb(
+	char *in,
+	char *out,
+	int  len,
+	char **endstr, /* optional out: pointer to the null-terminator of output */
+	int  *state) /* optional in/out: function state for continuing after running out of space in output buffer */
+{
 	*out++ = '\"';
 	for (;;) {
 		if (*in == '\\') {
@@ -58,6 +59,14 @@ void main() {
 		in++;
 		out++;
 	}
+}
+
+void main() {
+	char inBuf[] = "trailing and\\ in\"ternal\\\\\\\" quote\\\\\"";
+	char outBuf[100];
+	char *in = inBuf;
+	char *out = outBuf;
+	argvDumb(in, out, 100, NULL, NULL);
 	puts(inBuf);
 	puts(outBuf);
 }
