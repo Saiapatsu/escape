@@ -5,6 +5,8 @@ void main() {
 	char outBuf[100];
 	char *in = inBuf;
 	char *out = outBuf;
+	
+	*out++ = '\"';
 	for (;;) {
 		if (*in == '\\') {
 			in++;
@@ -21,6 +23,15 @@ void main() {
 					}
 					*out++ = '\\';
 					break;
+				} else if (*in == '\0') {
+					/* sequence of backslashes at end of string, escape them and the trailing quote in output */
+					while (count) {
+						*out++ = '\\';
+						*out++ = '\\';
+						count--;
+					}
+					*out++ = '\\';
+					goto end;
 				} else {
 					/* sequence of backslashes not followed by quote, the backslashes were literal */
 					while (count) {
@@ -37,6 +48,8 @@ void main() {
 			
 		} else if (*in == '\0') {
 			/* end of input string */
+			end:
+			*out++ = '\"';
 			*out = '\0';
 			break;
 		}
@@ -45,7 +58,6 @@ void main() {
 		in++;
 		out++;
 	}
-	
 	puts(inBuf);
 	puts(outBuf);
 }
