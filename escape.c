@@ -1,59 +1,51 @@
 #include <stdio.h>
 
 void main() {
-	char inBuf[] = "trailing and\\ internal\\\\\\\" quote\\\\\"";
+	char inBuf[] = "trailing and\\ in\"ternal\\\\\\\" quote\\\\\"";
 	char outBuf[100];
 	char *in = inBuf;
 	char *out = outBuf;
 	for (;;) {
-		switch(*in) {
-		case '\0':
-			/* end of input string */
-			*out = '\0';
-			goto finish;
-		case '\\':
-			/* sequences of backslashes followed by quotes must all be escaped */
+		if (*in == '\\') {
 			in++;
 			for (int count = 1; ; count++) {
 				if (*in == '\\') {
-					/* more backslashes, keep going */
+					/* more backslashes */
 					in++;
 				} else if (*in == '\"') {
-					/* quote after a sequence of backslashes, escape everything */
+					/* sequence of backslashes followed by quote, escape everything */
 					while (count) {
 						*out++ = '\\';
 						*out++ = '\\';
 						count--;
-						// putchar('c');
 					}
 					*out++ = '\\';
-					*out = '\"';
 					break;
 				} else {
-					/* regular character, all of these backslashes were literal actually */
+					/* sequence of backslashes not followed by quote, the backslashes were literal */
 					while (count) {
 						*out++ = '\\';
 						count--;
 					}
-					*out = *in;
 					break;
 				}
-				// putchar('b');
 			}
-			break;
-		case '\"':
-			/* quotes must be escaped */
+			
+		} else if (*in == '\"') {
+			/* stray quote */
 			*out++ = '\\';
-			/* gratuitous fallthrough */
-		default:
-			*out = *in;
+			
+		} else if (*in == '\0') {
+			/* end of input string */
+			*out = '\0';
 			break;
 		}
+		/* else do nothing noteworthy other than the following */
+		*out = *in;
 		in++;
 		out++;
-		// putchar('a');
 	}
-	finish:
+	
 	puts(inBuf);
 	puts(outBuf);
 }
