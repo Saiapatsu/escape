@@ -7,40 +7,36 @@ int argvDumb(
 	char **endstr, /* optional out: pointer to the null-terminator of output */
 	int  *state) /* optional in/out: function state for continuing after running out of space in output buffer */
 {
+	char *start = in;
 	*out++ = '\"';
 	for (;;) {
 		if (*in == '\\') {
-			/* count and pass backslashes */
-			*out++ = '\\';
 			int count = 1;
-			while (*++in == '\\') {
-				*out++ = '\\';
-				count++;
-			}
+			while (*++in == '\\') count++;
 			if (*in == '\"') {
-				/* escape quote and all slashes */
+				/* escape slashes and quote */
 				count++;
+				while (start != in) *out++ = *start++;
 				while (count--) *out++ = '\\';
 			} else if (*in == '\0') {
-				/* same, as the output string will be capped with a quote anyway */
-				count++;
+				/* escape slashes */
+				while (start != in) *out++ = *start++;
 				while (count--) *out++ = '\\';
 				break;
 			}
-			/* else backslashes were not followed by anything special and were copied as-is */
+			/* else backslashes were literal */
 			
 		} else if (*in == '\"') {
 			/* stray quote */
+			while (start != in) *out++ = *start++;
 			*out++ = '\\';
 			
 		} else if (*in == '\0') {
 			/* end of input string */
+			while (start != in) *out++ = *start++;
 			break;
 		}
-		
-		*out = *in;
 		in++;
-		out++;
 	}
 	*out++ = '\"';
 	*out = '\0';
