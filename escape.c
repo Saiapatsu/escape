@@ -56,4 +56,5 @@ void main() {
 	argvDumb(in, out, 100, NULL, NULL);
 	puts(inBuf);
 	puts(outBuf);
+	puts("\"trailing and\\ in\\\"ternal\\\\\\\\\\\\\\\" quote\\\\\\\\\\\"\"");
 }
