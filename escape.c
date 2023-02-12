@@ -8,10 +8,12 @@ int argvDumb(
 	int  *state) /* optional in/out: function state for continuing after running out of space in output buffer */
 {
 	char *start = in;
+	int count;
+	int terminate;
 	*out++ = '\"';
 	for (;;) {
-		int count = 0;
-		int terminate = 0;
+		count = 0;
+		terminate = 0;
 		while (*++in == '\\') count++;
 		if (*in == '\"') {
 			count++;
@@ -23,8 +25,8 @@ int argvDumb(
 		}
 		while (start != in) *out++ = *start++;
 		while (count--) *out++ = '\\';
-		if (terminate) break;
 		in++;
+		if (terminate) break;
 	}
 	*out++ = '\"';
 	*out = '\0';
