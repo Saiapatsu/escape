@@ -14,17 +14,17 @@ int argvDumb(
 	for (;;) {
 		count = 0;
 		terminate = 0;
-		while (*++in == '\\') count++;
+		while (*in == '\\') { count++; in++; }
 		if (*in == '\"') {
 			count++;
 		} else if (*in == '\0') {
 			terminate = 1;
-			in--;
 		} else {
+			in++;
 			continue;
 		}
 		while (start != in) *out++ = *start++;
-		while (count--) *out++ = '\\';
+		while (count) { *out++ = '\\'; count--; }
 		in++;
 		if (terminate) break;
 	}
@@ -35,12 +35,12 @@ int argvDumb(
 }
 
 void main() {
-	char inBuf[] = "trailing and\\ in\"ternal\\\\\\\" quote\\\\\"";
+	char inBuf[] = "\"trailing and\\ in\"\"ternal\\\\\\\" quote\\\\\"";
 	char outBuf[100];
 	char *in = inBuf;
 	char *out = outBuf;
 	argvDumb(in, out, 100, NULL, NULL);
 	puts(inBuf);
 	puts(outBuf);
-	puts("\"trailing and\\ in\\\"ternal\\\\\\\\\\\\\\\" quote\\\\\\\\\\\"\"");
+	puts("\"\\\"trailing and\\ in\\\"\\\"ternal\\\\\\\\\\\\\\\" quote\\\\\\\\\\\"\"");
 }
