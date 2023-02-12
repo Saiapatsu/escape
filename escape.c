@@ -29,6 +29,7 @@ int argvDumb(
 	}
 	*out++ = '\"';
 	*out = '\0';
+	if (endstr != NULL) *endstr = out;
 	
 	return 0;
 }
@@ -38,8 +39,11 @@ void main() {
 	char outBuf[100];
 	char *in = inBuf;
 	char *out = outBuf;
-	argvDumb(in, out, 100, NULL, NULL);
+	char *end;
+	int state;
+	argvDumb(in, out, 100, &end, &state);
 	puts(inBuf);
 	puts(outBuf);
 	puts("\"\\\"trailing and\\ in\\\"\\\"ternal\\\\\\\\\\\\\\\" quote\\\\\\\\\\\"\"");
+	if (end == NULL || *end != '\0') puts("*end does not point to \\0");
 }
