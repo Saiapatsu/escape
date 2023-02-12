@@ -18,7 +18,7 @@ int argvDumb(
 		if (*in == '\"') {
 			count++;
 		} else if (*in == '\0') {
-			terminate = 1;
+			terminate++;
 		} else {
 			in++;
 			continue;
