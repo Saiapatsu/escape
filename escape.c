@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 int argvDumb(
 	char *in,
@@ -22,8 +23,8 @@ int argvDumb(
 			in++;
 			continue;
 		}
-		while (start != in) *out++ = *start++;
-		while (count) { *out++ = '\\'; count--; }
+		memcpy(out, start, in - start); out += in - start; start = in;
+		memset(out, '\\', count); out += count;
 		in++;
 		if (terminate) break;
 	}
