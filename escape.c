@@ -9,11 +9,10 @@ int argvDumb(
 {
 	char *start = in;
 	int count;
-	int terminate;
+	int terminate = 0;
 	*out++ = '\"';
 	for (;;) {
 		count = 0;
-		terminate = 0;
 		while (*in == '\\') { count++; in++; }
 		if (*in == '\"') {
 			count++;
