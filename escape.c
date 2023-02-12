@@ -11,6 +11,8 @@ int argvDumb(
 	char *start = in;
 	int count;
 	int terminate = 0;
+	int toCopy;
+	char *end = out + len; /* todo fix these names */
 	*out++ = '\"';
 	for (;;) {
 		count = 0;
@@ -23,10 +25,20 @@ int argvDumb(
 			in++;
 			continue;
 		}
-		memcpy(out, start, in - start); out += in - start; start = in;
+		toCopy = in - start;
+		if (out + toCopy >= end) {
+			return 1;
+		}
+		memcpy(out, start, toCopy); out += toCopy; start = in;
+		if (out + count >= end) {
+			return 1;
+		}
 		memset(out, '\\', count); out += count;
 		in++;
 		if (terminate) break;
+	}
+	if (end - out < 2) {
+		return 1;
 	}
 	*out++ = '\"';
 	*out = '\0';
@@ -42,7 +54,11 @@ void main() {
 	char *out = outBuf;
 	char *end;
 	int state;
-	argvDumb(in, out, 100, &end, &state);
+	// argvDumb(in, out, 100, &end, &state);
+	if (argvDumb(in, out, 51, &end, &state)) {
+		puts("not enough");
+		return;
+	}
 	puts(inBuf);
 	puts(outBuf);
 	puts("\"\\\"trailing and\\ in\\\"\\\"ternal\\\\\\\\\\\\\\\" quote\\\\\\\\\\\"\"");
