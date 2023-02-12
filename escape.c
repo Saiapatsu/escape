@@ -2,47 +2,49 @@
 #include <string.h>
 
 int argvDumb(
-	char *in,
-	char *out,
-	int  len,
+	char *src,
+	char *dst,
+	int  n,
 	char **endstr, /* optional out: pointer to the null-terminator of output */
-	int  *state) /* optional in/out: function state for continuing after running out of space in output buffer */
+	int  *state) /* optional in/out: state to resume from */
 {
-	char *start = in;
-	int count;
-	int terminate = 0;
-	int toCopy;
-	char *end = out + len; /* todo fix these names */
-	*out++ = '\"';
+	char *cap = dst + n; /* first byte after end of dst, cannot write here */
+	char *anchor = src; /* first byte in src that hasn't been written to dst yet */
+	int terminate = 0; /* flag: whether \0 has been encountered */
+	*dst++ = '\"';
 	for (;;) {
-		count = 0;
-		while (*in == '\\') { count++; in++; }
-		if (*in == '\"') {
-			count++;
-		} else if (*in == '\0') {
-			terminate++;
+		int count = 0;
+		int toCopy;
+		while (*src == '\\') { count++; src++; }
+		/* if this sequence of 0 or more backslashes is followed by a quote
+		.. or a null, emit source characters followed by some amount of
+		.. backslashes and break the loop if necessary */
+		if (*src == '\"') {
+			count++; /* throw in an extra backslash to escape this quote */
+		} else if (*src == '\0') {
+			terminate++; /* finish after this iteration */
 		} else {
-			in++;
+			src++;
 			continue;
 		}
-		toCopy = in - start;
-		if (out + toCopy >= end) {
+		toCopy = src - anchor;
+		if (dst + toCopy >= cap) {
 			return 1;
 		}
-		memcpy(out, start, toCopy); out += toCopy; start = in;
-		if (out + count >= end) {
+		memcpy(dst, anchor, toCopy); dst += toCopy; anchor = src;
+		if (dst + count >= cap) {
 			return 1;
 		}
-		memset(out, '\\', count); out += count;
-		in++;
+		memset(dst, '\\', count); dst += count;
+		src++;
 		if (terminate) break;
 	}
-	if (end - out < 2) {
+	if (cap - dst < 2) {
 		return 1;
 	}
-	*out++ = '\"';
-	*out = '\0';
-	if (endstr != NULL) *endstr = out;
+	*dst++ = '\"';
+	*dst = '\0';
+	if (endstr != NULL) *endstr = dst;
 	
 	return 0;
 }
@@ -50,12 +52,11 @@ int argvDumb(
 void main() {
 	char inBuf[] = "\"trailing and\\ in\"\"ternal\\\\\\\" quote\\\\\"";
 	char outBuf[100];
-	char *in = inBuf;
-	char *out = outBuf;
+	char *src = inBuf;
+	char *dst = outBuf;
 	char *end;
 	int state;
-	// argvDumb(in, out, 100, &end, &state);
-	if (argvDumb(in, out, 51, &end, &state)) {
+	if (argvDumb(src, dst, 51, &end, &state)) {
 		puts("not enough");
 		return;
 	}
