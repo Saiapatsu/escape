@@ -10,32 +10,20 @@ int argvDumb(
 	char *start = in;
 	*out++ = '\"';
 	for (;;) {
-		if (*in == '\\') {
-			int count = 1;
-			while (*++in == '\\') count++;
-			if (*in == '\"') {
-				/* escape slashes and quote */
-				count++;
-				while (start != in) *out++ = *start++;
-				while (count--) *out++ = '\\';
-			} else if (*in == '\0') {
-				/* escape slashes */
-				while (start != in) *out++ = *start++;
-				while (count--) *out++ = '\\';
-				break;
-			}
-			/* else backslashes were literal */
-			
-		} else if (*in == '\"') {
-			/* stray quote */
-			while (start != in) *out++ = *start++;
-			*out++ = '\\';
-			
+		int count = 0;
+		int terminate = 0;
+		while (*++in == '\\') count++;
+		if (*in == '\"') {
+			count++;
 		} else if (*in == '\0') {
-			/* end of input string */
-			while (start != in) *out++ = *start++;
-			break;
+			terminate = 1;
+			in--;
+		} else {
+			continue;
 		}
+		while (start != in) *out++ = *start++;
+		while (count--) *out++ = '\\';
+		if (terminate) break;
 		in++;
 	}
 	*out++ = '\"';
