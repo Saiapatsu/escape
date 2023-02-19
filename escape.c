@@ -11,25 +11,29 @@ int argvDumb(
 	char *cap = dst + n - 1; /* for bounds check */
 	char *anchor = src; /* first byte in src that hasn't been written to dst yet */
 	int terminate = 0; /* flag: whether \0 has been encountered */
-	int count;
 	
 	*dst++ = '\"';
 	for (;;) {
-		count = 0;
+		int count = 0;
+		int toCopy;
+		
+		while (*src != '\\' && *src != '\"' && *src != '\0') src++;
 		while (*src == '\\') { count++; src++; }
+		
 		/* if this sequence of 0 or more backslashes is followed by a quote
 		.. or a null, emit source characters followed by some amount of
 		.. backslashes and break the loop if necessary */
 		if (*src == '\"') {
-			count++; /* extra backslash to escape this quote */
+			count++; /* insert extra backslash to escape this quote */
 		} else if (*src == '\0') {
 			terminate++; /* finish after this iteration */
 		} else {
+			/* at least one backslash not followed by any of the above */
 			src++;
 			continue;
 		}
 		
-		int toCopy = src - anchor;
+		toCopy = src - anchor;
 		
 		/* bounds check */
 		if (dst + toCopy + count >= cap) return 1;
