@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 #include <string.h>
 
 int argvDumb(
@@ -58,9 +59,15 @@ void main() {
 	memset(dst, 'x', 70);
 	dst[69] = '\0';
 	int n1 = 51;
-	if (argvDumb(src, dst, n1, &end)) {
-		puts("not enough");
+	
+	int iterations = 100000;
+	clock_t start_time = clock();
+	for (int i = 0; i < iterations; i++) {
+		argvDumb(src, dst, n1, &end);
 	}
+	double elapsed_time = (double)(clock() - start_time) / CLOCKS_PER_SEC;
+	printf("Done %d iters in %f seconds\n", iterations, elapsed_time);
+	
 	puts(src);
 	puts(dst);
 	puts(example);
