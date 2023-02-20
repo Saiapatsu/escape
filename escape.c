@@ -55,7 +55,8 @@ int argvDumb(
 	return 0;
 }
 
-void main() {
+/* gcc escape.c -o cescape.exe -std=c99 -Wall -Wextra && cescape */
+int main() {
 	char src[] = "\"trailing and\\ in\"\"ternal\\\\\\\" quote\\\\\"";
 	char dst[70];
 	char example[] = "\"\\\"trailing and\\ in\\\"\\\"ternal\\\\\\\\\\\\\\\" quote\\\\\\\\\\\"\"";
@@ -76,4 +77,5 @@ void main() {
 	puts(dst);
 	puts(example);
 	if (end == NULL || *end != '\0') puts("*end does not point to \\0");
+	return 0;
 }
