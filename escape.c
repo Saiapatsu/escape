@@ -34,6 +34,8 @@ int argvDumb(
 		}
 		
 		toCopy = src - anchor;
+		anchor = src;
+		src++; /* jump over whatever that if/else block found */
 		
 		/* bounds check */
 		if (dst + toCopy + count >= cap) return -1;
@@ -42,9 +44,7 @@ int argvDumb(
 		dst += toCopy;
 		memset(dst, '\\', count);
 		dst += count;
-		anchor = src;
 		
-		src++; /* jump over whatever that if/else block found */
 		if (terminate) break;
 	}
 	
