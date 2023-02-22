@@ -36,7 +36,7 @@ int argvDumb(
 		toCopy = src - anchor;
 		
 		/* bounds check */
-		if (dst + toCopy + count >= cap) return 1;
+		if (dst + toCopy + count >= cap) return -1;
 		
 		memcpy(dst, anchor, toCopy);
 		dst += toCopy;
