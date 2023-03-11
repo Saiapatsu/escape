@@ -2,6 +2,8 @@
 #include <time.h>
 #include <string.h>
 
+/* todo: return amount of bytes written like strftime? */
+
 int argvDumb(
 	char *src,
 	char *dst,
