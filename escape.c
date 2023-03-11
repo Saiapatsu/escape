@@ -63,7 +63,10 @@ int cmdDumb(
 	int  n,
 	char **endstr) /* optional out: pointer to the null-terminator of output */
 {
+	n--; /* leave space for the null */
 	for (;*src;) {
+		if (n == 0) return -1;
+		n--;
 		switch (*src) {
 		case '\t':
 		case '\r':
@@ -80,6 +83,8 @@ int cmdDumb(
 		case '"':
 		case '%':
 		case '!':
+			if (n == 0) return -1;
+			n--;
 			*dst++ = '^';
 			/* fallthrough */
 		default:
