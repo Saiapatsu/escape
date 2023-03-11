@@ -57,20 +57,57 @@ int argvDumb(
 	return 0;
 }
 
+int cmdDumb(
+	char *src,
+	char *dst,
+	int  n,
+	char **endstr) /* optional out: pointer to the null-terminator of output */
+{
+	for (;*src;) {
+		switch (*src) {
+		case '\t':
+		case '\r':
+		case '\n':
+			*dst++ = ' ';
+			break;
+		case '(':
+		case ')':
+		case '<':
+		case '>':
+		case '&':
+		case '|':
+		case '^':
+		case '"':
+		case '%':
+		case '!':
+			*dst++ = '^';
+			/* fallthrough */
+		default:
+			*dst++ = *src;
+		}
+		src++;
+	}
+	*dst = '\0';
+	if (endstr != NULL) *endstr = dst;
+	return 0;
+}
+
 /* gcc escape.c -o cescape.exe -std=c99 -Wall -Wextra && cescape */
 int main() {
-	char src[] = "\"trailing and\\ in\"\"ternal\\\\\\\" quote\\\\\"";
+	// char src[] = "\"trailing and\\ in\"\"ternal\\\\\\\" quote\\\\\"";
+	char src[] = "trailing and\\ internal\\\\\\\" quote\\\\\"";
 	char dst[70];
-	char example[] = "\"\\\"trailing and\\ in\\\"\\\"ternal\\\\\\\\\\\\\\\" quote\\\\\\\\\\\"\"";
+	// char example[] = "\"\\\"trailing and\\ in\\\"\\\"ternal\\\\\\\\\\\\\\\" quote\\\\\\\\\\\"\"";
+	char example[] = "trailing and\\ internal\\\\\\^\" quote\\\\^\"";
 	char *end;
 	memset(dst, 'x', 70);
 	dst[69] = '\0';
 	int n1 = 51;
 	
-	int iterations = 100000;
+	int iterations = 1;
 	clock_t start_time = clock();
 	for (int i = 0; i < iterations; i++) {
-		argvDumb(src, dst, n1, &end);
+		cmdDumb(src, dst, n1, &end);
 	}
 	double elapsed_time = (double)(clock() - start_time) / CLOCKS_PER_SEC;
 	printf("Done %d iters in %f seconds\n", iterations, elapsed_time);
