@@ -52,3 +52,19 @@ function escapeRedirect(str) {
 function escapeDelayed(str) {
 	return str.replace(/!/g, "^!");
 }
+
+// escape HTML text and attributes
+var escapesHtml = {
+	'"': "&quot;",
+	"'": "&apos;",
+	"&": "&amp;",
+	"<": "&lt;",
+	">": "&gt;",
+};
+function escapeHtmlText(str) {
+	return str.replace(/[&<>]/g, function(x) {return escapesHtml[x]});
+}
+function escapeHtmlAttr(str) {
+	return str.replace(/['"&<>]/g, function(x) {return escapesHtml[x]});
+}
+// snippet 3B292732384D522A6262742D47617560

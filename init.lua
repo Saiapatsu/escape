@@ -162,4 +162,20 @@ do
 	end
 end
 
+-- escape HTML text and attributes
+local escapesHtml = {
+	['"'] = "&quot;",
+	["'"] = "&apos;",
+	["&"] = "&amp;",
+	["<"] = "&lt;",
+	[">"] = "&gt;",
+}
+function escape.htmlText(str)
+	return str:gsub('[&<>]', escapesHtml)
+end
+function escape.htmlAttr(str)
+	return str:gsub('[\'"&<>]', escapesHtml)
+end
+-- snippet 3B292732384D522A6262742D47617560
+
 return escape
